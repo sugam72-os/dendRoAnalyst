@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dendrometer Data Analysis Workshop · dendRoAnalyst</title>
+  <meta name="description" content="Hands-on workshop materials for reproducible dendrometer and climate data analysis with dendRoAnalyst in R.">
+  <meta name="theme-color" content="#11150f">
+  <style>
+    :root {
+      --ink: #121610;
+      --paper: #f4f5ed;
+      --card: #fbfcf6;
+      --soft: #e9ecdf;
+      --line: #cbd1c3;
+      --muted: #5d6759;
+      --moss: #31553a;
+      --lime: #c8f16c;
+      --orange: #f0a24b;
+      --white: #fff;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.65 var(--sans); }
+    a { color: inherit; }
+    button { font: inherit; }
+    :focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+
+    .topbar {
+      position: sticky;
+      z-index: 30;
+      top: 0;
+      display: flex;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 0 28px;
+      border-bottom: 1px solid #2d352b;
+      color: #f5f7ef;
+      background: rgba(18,22,16,.95);
+      backdrop-filter: blur(14px);
+    }
+    .brand { display: inline-flex; align-items: center; gap: 11px; font-weight: 760; letter-spacing: -.025em; text-decoration: none; }
+    .brand-mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: var(--lime); background: #283127; font: 800 .76rem var(--mono); }
+    .brand em { color: var(--lime); font-style: normal; }
+    .top-links { display: flex; align-items: center; gap: 20px; }
+    .top-links a { color: #c4ccbd; font-size: .86rem; font-weight: 650; text-decoration: none; }
+    .top-links a:hover { color: var(--white); }
+    .top-links .home { padding: 8px 12px; border: 1px solid #4c5948; border-radius: 999px; color: var(--white); }
+
+    .page { display: grid; grid-template-columns: 280px minmax(0, 1fr); }
+    .sidebar {
+      position: sticky;
+      top: 66px;
+      height: calc(100vh - 66px);
+      overflow-y: auto;
+      padding: 38px 28px;
+      border-right: 1px solid var(--line);
+      background: #eceee4;
+    }
+    .sidebar-label { margin: 0 0 16px; color: var(--moss); font: 800 .72rem var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+    .sidebar nav { display: grid; gap: 2px; }
+    .sidebar nav a { padding: 10px 12px; border-radius: 9px; color: #485044; font-size: .88rem; font-weight: 650; text-decoration: none; }
+    .sidebar nav a:hover { color: var(--ink); background: rgba(255,255,255,.6); }
+    .sidebar-note { margin-top: 38px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: .78rem; }
+    .sidebar-note strong { display: block; margin-bottom: 4px; color: var(--ink); }
+
+    main { min-width: 0; }
+    .content { width: min(920px, calc(100% - 72px)); margin: 0 auto; }
+    .hero { padding: 84px 0 72px; border-bottom: 1px solid var(--line); }
+    .meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+    .meta span { padding: 6px 9px; border: 1px solid var(--line); border-radius: 999px; color: var(--muted); background: rgba(255,255,255,.46); font: .74rem var(--mono); }
+    h1 { max-width: 820px; margin: 0; font-size: clamp(3.2rem, 7.5vw, 6.7rem); line-height: .93; letter-spacing: -.072em; }
+    h1 em { color: var(--moss); font-style: normal; }
+    .lead { max-width: 720px; margin: 28px 0 0; color: #465043; font-size: clamp(1.05rem, 2vw, 1.25rem); }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 30px; }
+    .button { display: inline-flex; min-height: 46px; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--ink); border-radius: 11px; font-weight: 730; text-decoration: none; }
+    .button.primary { color: var(--paper); background: var(--ink); }
+    .button.secondary { background: rgba(255,255,255,.5); }
+
+    section { padding: 72px 0; border-bottom: 1px solid var(--line); scroll-margin-top: 86px; }
+    .eyebrow { display: flex; align-items: center; gap: 10px; margin: 0 0 12px; color: var(--moss); font: 800 .75rem var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+    .eyebrow::before { width: 26px; height: 2px; background: var(--moss); content: ""; }
+    h2 { max-width: 740px; margin: 0 0 18px; font-size: clamp(2.15rem, 5vw, 4rem); line-height: 1.02; letter-spacing: -.055em; }
+    .section-intro { max-width: 720px; margin: 0; color: var(--muted); }
+
+    .goals { display: grid; grid-template-columns: 1fr 1fr; gap: 13px; margin-top: 36px; counter-reset: goal; }
+    .goal { position: relative; min-height: 156px; padding: 24px 23px 23px 72px; border: 1px solid var(--line); border-radius: 15px; background: var(--card); counter-increment: goal; }
+    .goal::before { position: absolute; top: 24px; left: 23px; color: var(--moss); content: "0" counter(goal); font: 800 .74rem var(--mono); }
+    .goal strong { display: block; margin-bottom: 7px; font-size: 1.02rem; }
+    .goal p { margin: 0; color: var(--muted); font-size: .89rem; }
+
+    .curriculum { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 34px; }
+    .module { display: grid; grid-template-columns: 42px 1fr; gap: 14px; min-height: 114px; align-items: start; padding: 21px; border: 1px solid var(--line); border-radius: 14px; background: rgba(251,252,246,.7); }
+    .module-num { display: grid; width: 42px; height: 42px; place-items: center; border-radius: 11px; color: var(--lime); background: var(--moss); font: 800 .74rem var(--mono); }
+    .module h3 { margin: 1px 0 5px; font-size: 1rem; line-height: 1.3; }
+    .module p { margin: 0; color: var(--muted); font-size: .84rem; line-height: 1.5; }
+
+    .code-card { overflow: hidden; margin-top: 32px; border: 1px solid #313a2f; border-radius: 17px; background: #11150f; box-shadow: 0 18px 50px rgba(26,35,23,.12); }
+    .code-head { display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: 18px; padding: 0 17px; border-bottom: 1px solid #313a2f; color: #9aa594; font: .75rem var(--mono); }
+    .copy { padding: 7px 10px; border: 1px solid #465044; border-radius: 8px; color: #e0e6da; background: #222a20; cursor: pointer; font-size: .76rem; font-weight: 700; }
+    .copy:hover { border-color: var(--lime); }
+    pre { margin: 0; overflow-x: auto; padding: 24px 22px; color: #e2e7dc; font: .86rem/1.75 var(--mono); }
+    .fn { color: var(--lime); }
+    .str { color: #f3b15f; }
+    .cm { color: #7e8a79; }
+    .obj { color: #a9c8ff; }
+
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 32px; }
+    .option { padding: 25px; border: 1px solid var(--line); border-radius: 15px; background: var(--card); }
+    .option-tag { color: var(--moss); font: 800 .72rem var(--mono); text-transform: uppercase; letter-spacing: .08em; }
+    .option h3 { margin: 28px 0 8px; font-size: 1.15rem; }
+    .option p { margin: 0; color: var(--muted); font-size: .89rem; }
+
+    .files { margin-top: 30px; overflow: hidden; border: 1px solid var(--line); border-radius: 15px; background: var(--card); }
+    .file { display: grid; grid-template-columns: minmax(190px,.75fr) 1.25fr; gap: 22px; padding: 17px 20px; border-bottom: 1px solid var(--line); }
+    .file:last-child { border-bottom: 0; }
+    .file code { color: var(--moss); font: 750 .81rem var(--mono); }
+    .file span { color: var(--muted); font-size: .87rem; }
+
+    .notice { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; margin-top: 34px; padding: 22px; border: 1px solid #b9c99f; border-radius: 14px; background: #eef4da; }
+    .notice-mark { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 9px; color: var(--lime); background: var(--moss); font: 800 .76rem var(--mono); }
+    .notice strong { display: block; margin-bottom: 3px; }
+    .notice p { margin: 0; color: #56604f; font-size: .88rem; }
+
+    footer { padding: 32px 0 44px; color: var(--muted); font-size: .82rem; }
+    .footer-row { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+    .footer-row div { display: flex; gap: 16px; }
+    .toast { position: fixed; z-index: 60; right: 22px; bottom: 22px; transform: translateY(15px); padding: 10px 14px; border-radius: 9px; color: var(--white); background: var(--ink); opacity: 0; pointer-events: none; transition: .2s ease; font-size: .8rem; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; overflow: visible; padding: 20px; border-right: 0; border-bottom: 1px solid var(--line); }
+      .sidebar-label, .sidebar-note { display: none; }
+      .sidebar nav { display: flex; overflow-x: auto; gap: 6px; padding-bottom: 3px; }
+      .sidebar nav a { flex: 0 0 auto; padding: 8px 10px; background: rgba(255,255,255,.45); font-size: .78rem; }
+      .content { width: min(100% - 34px, 920px); }
+    }
+    @media (max-width: 660px) {
+      .topbar { min-height: 61px; padding: 0 13px; }
+      .top-links a:not(.home) { display: none; }
+      .page { grid-template-columns: 1fr; }
+      .hero { padding: 58px 0 54px; }
+      h1 { font-size: clamp(3rem, 17vw, 5rem); }
+      section { padding: 58px 0; }
+      .goals, .curriculum, .options { grid-template-columns: 1fr; }
+      .file { grid-template-columns: 1fr; gap: 5px; }
+      .footer-row { display: grid; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="dendRoAnalyst home"><span class="brand-mark">dR</span><span>dend<em>Ro</em>Analyst</span></a>
+    <nav class="top-links" aria-label="External links">
+      <a href="https://cran.r-project.org/package=dendRoAnalyst" target="_blank" rel="noreferrer">CRAN ↗</a>
+      <a href="https://cran.r-project.org/web/packages/dendRoAnalyst/vignettes/dendRoAnalyst_vignettes.html" target="_blank" rel="noreferrer">Package vignette ↗</a>
+      <a class="home" href="../">Package website</a>
+    </nav>
+  </header>
+
+  <div class="page">
+    <aside class="sidebar">
+      <p class="sidebar-label">Workshop contents</p>
+      <nav aria-label="Workshop navigation">
+        <a href="#welcome">Welcome</a>
+        <a href="#goals">Learning goals</a>
+        <a href="#curriculum">Curriculum</a>
+        <a href="#start">Start a session</a>
+        <a href="#data">Load data</a>
+        <a href="#files">Project files</a>
+      </nav>
+      <div class="sidebar-note"><strong>Workshop materials</strong>Prepared 19 May 2026 · R-based, reproducible, and designed for hands-on teaching.</div>
+    </aside>
+
+    <main>
+      <div class="content">
+        <header class="hero" id="welcome">
+          <div class="meta"><span>Workshop materials</span><span>19 May 2026</span><span>dendRoAnalyst</span></div>
+          <h1>Dendrometer Data <em>Analysis</em> Workshop</h1>
+          <p class="lead">A hands-on pathway from raw dendrometer and climate records to biological phases, growth fitting, climate relationships, and time-frequency analysis.</p>
+          <div class="hero-actions">
+            <a class="button primary" href="#start">Start the workshop →</a>
+            <a class="button secondary" href="https://cran.r-project.org/package=dendRoAnalyst" target="_blank" rel="noreferrer">Install the R package ↗</a>
+          </div>
+        </header>
+
+        <section id="goals">
+          <p class="eyebrow">Workshop goals</p>
+          <h2>Build a complete and reproducible workflow.</h2>
+          <p class="section-intro">By the end of the workshop, participants should be able to:</p>
+          <div class="goals">
+            <article class="goal"><strong>Import and diagnose</strong><p>Read dendrometer and climate files, identify their temporal resolution, and diagnose irregularities.</p></article>
+            <article class="goal"><strong>Prepare time series</strong><p>Resample, truncate, smooth, standardise, detrend, aggregate, and interpolate missing values.</p></article>
+            <article class="goal"><strong>Extract stem dynamics</strong><p>Estimate daily behaviour, zero-growth phases, stem-cycle phases, and TWD maxima.</p></article>
+            <article class="goal"><strong>Fit growth curves</strong><p>Fit single and double growth functions and compare their performance.</p></article>
+            <article class="goal"><strong>Integrate climate</strong><p>Join climate variables at daily, subdaily, and biological-phase scales.</p></article>
+            <article class="goal"><strong>Analyse responses</strong><p>Study event-centred responses, moving correlations, and wavelet patterns.</p></article>
+          </div>
+        </section>
+
+        <section id="curriculum">
+          <p class="eyebrow">Curriculum</p>
+          <h2>Seven modules plus exercises.</h2>
+          <p class="section-intro">The sequence follows the analysis path used in the workshop source material.</p>
+          <div class="curriculum">
+            <article class="module"><span class="module-num">01</span><div><h3>Import, resampling, and cleaning</h3><p>Read files, check resolution, remove artefacts, interpolate gaps, and standardise time steps.</p></div></article>
+            <article class="module"><span class="module-num">02</span><div><h3>Standardisation and detrending</h3><p>Prepare comparable signals and isolate the temporal components needed for analysis.</p></div></article>
+            <article class="module"><span class="module-num">03</span><div><h3>Daily and phase analysis</h3><p>Calculate daily metrics and extract zero-growth and stem-cycle phases.</p></div></article>
+            <article class="module"><span class="module-num">04</span><div><h3>Growth fitting</h3><p>Fit single and double growth functions and evaluate their performance.</p></div></article>
+            <article class="module"><span class="module-num">05</span><div><h3>Climate integration</h3><p>Harmonise and attach meteorological variables across relevant temporal scales.</p></div></article>
+            <article class="module"><span class="module-num">06</span><div><h3>Events, correlations, and wavelets</h3><p>Assess event responses, moving climate relationships, periodicity, and coherence.</p></div></article>
+            <article class="module"><span class="module-num">07</span><div><h3>Function catalogue</h3><p>Use the package-wide reference for public functions and their variations.</p></div></article>
+            <article class="module"><span class="module-num">08</span><div><h3>Practical exercises</h3><p>Apply the workflow to dendrometer and climate datasets step by step.</p></div></article>
+          </div>
+        </section>
+
+        <section id="start">
+          <p class="eyebrow">Start every session with</p>
+          <h2>Load the setup and data once.</h2>
+          <p class="section-intro">The setup script prepares the workshop functions and returns the dendrometer and climate objects used throughout the modules.</p>
+          <div class="code-card">
+            <div class="code-head"><span>R · session setup</span><button class="copy" type="button" data-copy="setup-code">Copy code</button></div>
+            <pre id="setup-code"><code><span class="fn">source</span>(<span class="str">"00_setup.R"</span>)
+<span class="obj">workshop_data</span> &lt;- <span class="fn">load_workshop_data</span>()
+<span class="obj">dm</span> &lt;- workshop_data$dm
+<span class="obj">clim</span> &lt;- workshop_data$clim
+
+<span class="fn">names</span>(dm)
+<span class="fn">names</span>(clim)</code></pre>
+          </div>
+        </section>
+
+        <section id="data">
+          <p class="eyebrow">Data-loading options</p>
+          <h2>Use workshop examples or your own files.</h2>
+          <div class="options">
+            <article class="option"><span class="option-tag">Automatic</span><h3>Start immediately</h3><p>The loader checks <code>data/raw/</code>, then the package examples, and finally creates simulated data if neither source is available.</p></article>
+            <article class="option"><span class="option-tag">Explicit</span><h3>Control the import</h3><p>Provide dendrometer and climate file paths and pass delimiter, decimal, time-column, and timezone settings to the readers.</p></article>
+          </div>
+          <div class="code-card">
+            <div class="code-head"><span>R · explicit files</span><button class="copy" type="button" data-copy="data-code">Copy code</button></div>
+            <pre id="data-code"><code><span class="obj">workshop_data</span> &lt;- <span class="fn">load_workshop_data</span>(
+  dm_file = <span class="str">"data/raw/dendrometer.csv"</span>,
+  clim_file = <span class="str">"data/raw/climate.csv"</span>,
+  tz = <span class="str">"UTC"</span>,
+  dm_args = <span class="fn">list</span>(sep = <span class="str">";"</span>, dec = <span class="str">","</span>, datetime_col = 1),
+  clim_args = <span class="fn">list</span>(sep = <span class="str">";"</span>, dec = <span class="str">","</span>, time_col = <span class="str">"TIME"</span>)
+)</code></pre>
+          </div>
+        </section>
+
+        <section id="files">
+          <p class="eyebrow">Project structure</p>
+          <h2>Know where each part lives.</h2>
+          <div class="files">
+            <div class="file"><code>00_setup.R</code><span>Initial setup and data-loading helpers.</span></div>
+            <div class="file"><code>R/functions/</code><span>All original dendrometer-analysis functions used by the workshop.</span></div>
+            <div class="file"><code>scripts/02_full_workflow_template.R</code><span>A one-page template covering the complete workflow.</span></div>
+            <div class="file"><code>reference/public_function_catalogue.csv</code><span>Main workshop functions and their available variations.</span></div>
+            <div class="file"><code>reference/function_catalogue.csv</code><span>All detected functions, including internal helpers.</span></div>
+          </div>
+          <div class="notice"><span class="notice-mark">i</span><div><strong>About this web version</strong><p>The uploaded HTML contained the workshop homepage but not its linked module pages or Quarto support files. This page therefore presents all available homepage material without broken dependencies.</p></div></div>
+        </section>
+
+        <footer>
+          <div class="footer-row"><span>Dendrometer Data Analysis Workshop · dendRoAnalyst</span><div><a href="../">Package website</a><a href="mailto:sugam.aryal@fau.de">Contact</a></div></div>
+        </footer>
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" role="status" aria-live="polite">Code copied</div>
+  <script>
+    const toast = document.querySelector('.toast');
+    let timer;
+    document.querySelectorAll('[data-copy]').forEach(button => {
+      button.addEventListener('click', async () => {
+        const code = document.getElementById(button.dataset.copy).innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          toast.textContent = 'Code copied';
+        } catch (_) {
+          toast.textContent = 'Select the code and copy it manually';
+        }
+        toast.classList.add('show');
+        clearTimeout(timer);
+        timer = setTimeout(() => toast.classList.remove('show'), 1800);
+      });
+    });
+  </script>
+</body>
+</html>
